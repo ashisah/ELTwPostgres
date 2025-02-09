@@ -3,28 +3,29 @@ from psycopg2 import sql
 from contextlib import closing
 from dotenv import load_dotenv
 import os
+from db_utils import get_db_connection
 
-load_dotenv()
+# load_dotenv()
 
-DATABASE_NAME = os.getenv("DB_NAME")
-USER = os.getenv("DB_USER")
-PASSWORD = os.getenv("DB_PASSWORD")
-HOST = os.getenv("DB_HOST")
-PORT = os.getenv("DB_PORT")
+# DATABASE_NAME = os.getenv("DB_NAME")
+# USER = os.getenv("DB_USER")
+# PASSWORD = os.getenv("DB_PASSWORD")
+# HOST = os.getenv("DB_HOST")
+# PORT = os.getenv("DB_PORT")
 
 
-def get_db_connection():
-    try:
-        return psycopg2.connect(
-            dbname=DATABASE_NAME,
-            user=USER,
-            password=PASSWORD,
-            host=HOST,
-            port=PORT
-        )
-    except psycopg2.Error as e:
-        print(f"Error connecting to PostgreSQL database '{DATABASE_NAME}': {e}")
-        raise
+# def get_db_connection():
+#     try:
+#         return psycopg2.connect(
+#             dbname=DATABASE_NAME,
+#             user=USER,
+#             password=PASSWORD,
+#             host=HOST,
+#             port=PORT
+#         )
+#     except psycopg2.Error as e:
+#         print(f"Error connecting to PostgreSQL database '{DATABASE_NAME}': {e}")
+#         raise
 
 def clean_data():
     try:
