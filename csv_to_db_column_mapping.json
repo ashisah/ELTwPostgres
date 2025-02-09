@@ -1,0 +1,11 @@
+{
+    "Employee Id": "id",
+    "Name": "name",
+    "Age": "age",
+    "Department": "dept",
+    "Date of Joining": "join_date",
+    "Years of Experience": "year_xp",
+    "Country": "country",
+    "Salary": "salary",
+    "Performance Rating": "performance_rating"
+}
