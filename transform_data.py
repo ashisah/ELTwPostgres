@@ -5,27 +5,6 @@ from dotenv import load_dotenv
 import os
 from db_utils import get_db_connection
 
-# load_dotenv()
-
-# DATABASE_NAME = os.getenv("DB_NAME")
-# USER = os.getenv("DB_USER")
-# PASSWORD = os.getenv("DB_PASSWORD")
-# HOST = os.getenv("DB_HOST")
-# PORT = os.getenv("DB_PORT")
-
-
-# def get_db_connection():
-#     try:
-#         return psycopg2.connect(
-#             dbname=DATABASE_NAME,
-#             user=USER,
-#             password=PASSWORD,
-#             host=HOST,
-#             port=PORT
-#         )
-#     except psycopg2.Error as e:
-#         print(f"Error connecting to PostgreSQL database '{DATABASE_NAME}': {e}")
-#         raise
 
 def clean_data():
     try:
@@ -34,32 +13,56 @@ def clean_data():
                 # Handle missing data
                 cursor.execute("""
                     UPDATE employees
-                    SET age = COALESCE(age, 0),
-                        salary = COALESCE(salary, 0),
-                        year_xp = COALESCE(year_xp, '0'),
+                    SET 
+                        name = NULLIF(name, 'NaN'),
+                        year_xp = NULLIF(year_xp, 'NaN'),
+                        dept = NULLIF(dept, 'NaN'),
+                        country = NULLIF(country, 'NaN'),
+                        performance_rating = NULLIF(performance_rating, 'NaN');
+                """)
+                
+                
+                cursor.execute("""
+                    UPDATE employees
+                    SET year_xp = COALESCE(year_xp, '0'),
                         name = COALESCE(name, 'Unknown'),
                         dept = COALESCE(dept, 'Unknown'),
                         country = COALESCE(country, 'Unknown'),
                         performance_rating = COALESCE(performance_rating, 'Unknown');
                 """)
-                
-                # Standardize department names
+
+                #change year_xp from text to integer column
                 cursor.execute("""
-                    UPDATE employees
-                    SET dept = CASE
-                        WHEN dept ILIKE 'RnD' THEN 'R&D'
-                        WHEN dept ILIKE 'Oprations' THEN 'Operations'
-                        WHEN dept ILIKE 'Marketng' THEN 'Marketing'
-                        WHEN dept ILIKE 'Lgistics' THEN 'Logistics'
-                        WHEN dept ILIKE 'Hr' OR dept ILIKE 'H R' OR dept ILIKE 'hr' THEN 'HR'
-                        WHEN dept ILIKE 'Fin' OR dept ILIKE 'Finanace' THEN 'Finance'
-                        WHEN dept ILIKE 'Customer Support' THEN 'Customer Support'
-                        WHEN dept ILIKE 'Sales' THEN 'Sales'
-                        ELSE dept
+                    ALTER TABLE employees
+                    ALTER COLUMN year_xp TYPE bigint USING CASE
+                        WHEN trim(year_xp) SIMILAR TO '[0-9]+' THEN year_xp::bigint
+                        ELSE NULL -- or 0 if you want to convert non-numeric or problematic values to zero
                     END;
                 """)
                 
-                # Handle duplicate IDs
+                
+                # Standardize department names
+                cursor.execute("""UPDATE employees SET dept = UPPER(dept);""")
+                cursor.execute("""
+                    UPDATE employees
+                    SET dept = CASE
+                        WHEN dept ILIKE 'CUST SUPPORT' OR dept ILIKE 'CUSTOMERSUPPORT' THEN 'CUSTOMER SUPPORT'
+                        WHEN dept ILIKE 'FIN' OR dept ILIKE 'FINANACE' THEN 'FINANCE'
+                        WHEN dept ILIKE 'H R' OR dept ILIKE 'HR' THEN 'HUMAN RESOURCES'
+                        WHEN dept ILIKE 'LEGL' THEN 'LEGAL'
+                        WHEN dept ILIKE 'LGISTICS' OR dept ILIKE 'LOGSTICS' THEN 'LOGISTICS'
+                        WHEN dept ILIKE 'MARKETNG' THEN 'MARKETING'
+                        WHEN dept ILIKE 'OPRATIONS' THEN 'OPERATIONS'
+                        WHEN dept ILIKE 'RESEARCH' OR dept ILIKE 'RND' THEN 'R&D'
+                        WHEN dept ILIKE 'SLAES' THEN 'SALES'
+                        ELSE dept
+                    END;
+                """)
+
+                #standardize country names
+                cursor.execute("UPDATE employees SET country = UPPER(country);")
+                
+                # Handle duplicate IDs--sufficient to just delete
                 cursor.execute("""
                     WITH duplicates AS (
                         SELECT id, MIN(ctid) AS min_ctid
@@ -73,13 +76,13 @@ def clean_data():
                 
                 # Add primary key constraint
                 cursor.execute("""
-                    ALTER TABLE employees
-                    ADD CONSTRAINT employees_pk PRIMARY KEY (id);
+                   ALTER TABLE employees
+                   ADD CONSTRAINT employees_pk PRIMARY KEY (id);
                 """)
 
                 cursor.execute("""
-                    ALTER TABLE employees
-                    ALTER COLUMN year_xp TYPE INTEGER USING year_xp::INTEGER;
+                   ALTER TABLE employees
+                   ALTER COLUMN year_xp TYPE INTEGER USING year_xp::INTEGER;
                 """)
                 
                 connection.commit()  # Commit the transaction
