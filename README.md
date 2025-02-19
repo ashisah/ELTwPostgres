@@ -32,4 +32,5 @@ All the data for this project comes from the <strong>employee_data_source.csv</s
   <li>If on Windows run setup_dependencies.ps1 and run_scripts.ps1</li>
   <li>If on Linux/Unix run setup_dependencies.sh and run_scripts.sh</li>
 </ol>
+<br>
 *Note: Python3 must be installed on your computer in order to run the scripts locally
