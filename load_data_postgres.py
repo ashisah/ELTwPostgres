@@ -31,7 +31,7 @@ def ensure_table_exists():
     try:
         with get_db_connection() as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("DROP TABLE employees;")
+                #cursor.execute("DROP TABLE employees;")
                 cursor.execute(create_table_query)
                 connection.commit()  # Commit the transaction
         print(f"Table 'employees' exists in the database '{DATABASE_NAME}'.")
